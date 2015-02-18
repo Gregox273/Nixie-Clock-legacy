@@ -79,9 +79,9 @@ void update(int numbers[],int n){//array, length
   //8 bit int for each chip
   int data1 = B00000000;
   int data2 = B00000000;
-  int data3 = numbers[5] + (numbers[4] << 4);
-  int data4 = numbers[3] + (numbers[2] << 4);
-  int data5 = numbers[1] + (numbers[0] << 4);
+  int data3 = numbers[4] + (numbers[5] << 4);
+  int data4 = numbers[2] + (numbers[3] << 4);
+  int data5 = numbers[0] + (numbers[1] << 4);
   
   //send values to shift registers
   digitalWrite(latchPin,LOW);
