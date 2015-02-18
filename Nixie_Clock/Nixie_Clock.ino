@@ -14,6 +14,8 @@ int clockPin = 7;
 int dataPin = A2;
 boolean debug = true; //turns on serial debugging
 int digits[7];
+int anodes[7] = {3,5,6,9,10,11};
+int bulb = 8;//neon bulb pin
 
 tmElements_t tm;
 
@@ -23,6 +25,20 @@ void setup(){
   pinMode (latchPin, OUTPUT);
   pinMode (clockPin, OUTPUT);
   pinMode (dataPin, OUTPUT);
+  //All anode PWM pins to outputs
+  
+  for (int x = 0; x<6; x++){
+    pinMode(anodes[x],OUTPUT);
+    digitalWrite(anodes[x],LOW);
+  }
+  //neon bulbs
+  pinMode(bulb,OUTPUT);
+  digitalWrite(bulb,LOW);
+  int placehold[7] = {8,8,8,8,8,8};
+  update(placehold, sizeof(placehold));
+  for (int x = 0; x<6; x++){
+    digitalWrite(anodes[x],HIGH);//leave the tubes on max brightness for v0.1
+  }
 }
 
 void loop(){
@@ -64,18 +80,25 @@ void loop(){
     }
     delay(9000);
   }
-
+  //int x = millis();
+  digitalWrite(bulb, !digitalRead(bulb));//flash neon bulbs once a second
   while (tm.Second == 10* digits[4] + digits[5]){
-    //wait for second to pass, add other stuff here to do in the meantime (and remove/reduce the delay?)
-    delay(100);
+    //wait for second to pass, do other stuff here
+    
+    //digitalWrite(bulb, HIGH);//toggle neon bulbs every half second
+    //if((unsigned long)(millis() - x) >= 500){
+      //digitalWrite(bulb, LOW);//toggle neon bulbs every half second
+    //}
     RTC.read(tm);
   }
 }
 
 
 void update(int numbers[],int n){//array, length
-  //Serial.println("Update run");
-  
+  if (debug){
+    Serial.println("Update run");
+  }
+
   //8 bit int for each chip
   int data1 = B00000000;
   int data2 = B00000000;
@@ -91,6 +114,7 @@ void update(int numbers[],int n){//array, length
   shiftOut(dataPin, clockPin, MSBFIRST,data4);
   shiftOut(dataPin, clockPin, MSBFIRST,data5);
   digitalWrite(latchPin, HIGH);
+
   if (debug){
     Serial.println (data1);//debug
     Serial.println (data2);//debug

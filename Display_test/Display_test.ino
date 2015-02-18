@@ -3,13 +3,28 @@
 int latchPin = 4;
 int clockPin = 7;
 int dataPin = A2;
-
+int anodes[7] = {3,5,6,9,10,11};
+int bulb = 8//neon bulb pin
 
 void setup(){
   Serial.begin(9600);
   pinMode (latchPin, OUTPUT);
   pinMode (clockPin, OUTPUT);
   pinMode (dataPin, OUTPUT);
+  //All anode PWM pins to outputs
+  
+  for (int x = 0; x<6; x++){
+    pinMode(anodes[x],OUTPUT);
+    digitalWrite(anodes[x],LOW);
+  }
+  //neon bulbs
+  pinMode(bulb,OUTPUT);
+  digitalWrite(bulb,HIGH);
+  int placehold[7] = {8,8,8,8,8,8};
+  update(placehold, sizeof(placehold));
+  for (int x = 0; x<6; x++){
+    digitalWrite(anodes[x],HIGH);//leave the tubes on max brightness for v0.1
+  }
 }
 
 void loop(){
@@ -41,6 +56,7 @@ void loop(){
 
 void update(int numbers[],int n){//array, length
   Serial.println("Update run");
+  
   
   //8 bit int for each chip
   int data1 = B00000000;
