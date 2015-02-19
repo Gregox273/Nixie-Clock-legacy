@@ -101,6 +101,15 @@ void update(int numbers[],int n){//array, length
 
   //8 bit int for each chip
   int data1 = B00000000;
+  if (0<=tm.Hour<8){
+    data1 = B11000000;
+  }
+  else if (8<=tm.Hour<16){
+    data1 = B10100000;
+  }
+  else{
+    data1 = B10010000;
+  }
   int data2 = B00000000;
   int data3 = numbers[4] + (numbers[5] << 4);
   int data4 = numbers[2] + (numbers[3] << 4);
