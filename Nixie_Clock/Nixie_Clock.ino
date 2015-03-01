@@ -101,7 +101,7 @@ void update(int numbers[],int n){//array, length
 
   //8 bit int for each chip
   int data1 = B00000000;
-  if (0<=tm.Hour<8){
+  if (16<=tm.Hour<0){
     data1 = B11000000;
   }
   else if (8<=tm.Hour<16){
