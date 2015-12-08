@@ -18,17 +18,17 @@ void setup() {
   bool config=false;
 
   // get the date and time the compiler was run
-  if (getDate(__DATE__) && getTime(__TIME__)) {
-    parse = true;
+  //if (getDate(__DATE__) && getTime(__TIME__)) {
+   // parse = true;
     // and configure the RTC with this info
-    if (RTC.write(tm)) {
-      config = true;
-    }
-  }
+   // if (RTC.write(tm)) {
+      //config = true;
+    //}
+ // }
   Serial.begin(9600);
   while (!Serial) ; // wait for serial
   delay(200);
-  if (parse && config) {
+ /* if (parse && config) {
     Serial.print("DS1307 configured Time=");
     Serial.print(__TIME__);
     Serial.print(", Date=");
@@ -43,6 +43,7 @@ void setup() {
     Serial.print(__DATE__);
     Serial.println("\"");
     }
+    */
   Serial.println("DS1307RTC Read Test");
   Serial.println("-------------------");
 }

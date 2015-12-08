@@ -110,7 +110,8 @@ void update(int numbers[],int n){//array, length
   else{
     data1 = B10010000;
   }
-  int data2 = B00000000;
+  //no more decimal chip
+  //int data2 = B00000000;
   int data3 = numbers[4] + (numbers[5] << 4);
   int data4 = numbers[2] + (numbers[3] << 4);
   int data5 = numbers[0] + (numbers[1] << 4);
@@ -118,7 +119,7 @@ void update(int numbers[],int n){//array, length
   //send values to shift registers
   digitalWrite(latchPin,LOW);
   shiftOut(dataPin, clockPin, MSBFIRST,data1);
-  shiftOut(dataPin, clockPin, MSBFIRST,data2);
+  //shiftOut(dataPin, clockPin, MSBFIRST,data2);
   shiftOut(dataPin, clockPin, MSBFIRST,data3);
   shiftOut(dataPin, clockPin, MSBFIRST,data4);
   shiftOut(dataPin, clockPin, MSBFIRST,data5);
@@ -126,7 +127,7 @@ void update(int numbers[],int n){//array, length
 
   if (debug){
     Serial.println (data1);//debug
-    Serial.println (data2);//debug
+    //Serial.println (data2);//debug
     Serial.println (data3);//debug
     Serial.println (data4);//debug
     Serial.println (data5);//debug
