@@ -35,7 +35,7 @@ message rather than overflow software serial port with one time message per seco
 #include <SoftwareSerial.h>
 SoftwareSerial GPS(A0, 13);//serial port for the GPS
 byte gps_set_sucess = 0 ;//global variable
-boolean debug = true; //Serial debugging
+boolean debug = false; //Serial debugging
 
 
 struct GPStime{    //the received nav-utc packet
@@ -55,6 +55,7 @@ void setup()
 {
   GPS.begin(9600); 
   // START OUR SERIAL DEBUG PORT
+  Serial.begin(9600);
   if (debug){
   Serial.begin(9600);
   Serial.println("GPS Demonstration Script");
@@ -84,21 +85,30 @@ void setup()
   sendUBX(setSol, sizeof(setSol)/sizeof(uint8_t));
   
  //activate time-utc messages
-  uint8_t setUtc[]={0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x21, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  sendUBX(setUtc, sizeof(setUtc)/sizeof(uint8_t));
+  //uint8_t setUtc[]={0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x21, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  //sendUBX(setUtc, sizeof(setUtc)/sizeof(uint8_t));
  //activate SBAS (auto select service depending on location)
  uint8_t setSBAS[]={0xB5, 0x62, 0x06, 0x16, 0x08, 0x00, 0x01, 0x07, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
  sendUBX(setSBAS, sizeof(setSBAS)/sizeof(uint8_t));
 
 
  }
-void loop()
-{    if (GPS.available()){
+void loop(){
+  uint8_t setUtc[]={0xB5, 0x62, 0x01, 0x21, 0x00, 0x00, 0x22, 0x67};
+  for (int x = 0; x < 8; x++){
+    GPS.write(setUtc[x]);
+    delay(100);
+  }
+  delay(1000);
+    if (GPS.available()){
+      while (GPS.available()){
+       Serial.write(GPS.read());
+      }
       delay(200);    
       uint8_t buf[28];//the packet from the GPS
 
       for (int x=0; x<28; x++){
-        buf[x]=GPS.read();
+        //buf[x]=GPS.read();
         
       }
       

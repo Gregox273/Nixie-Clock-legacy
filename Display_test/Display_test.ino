@@ -5,7 +5,7 @@ int clockPin = 7;
 int dataPin = A2;
 int anodes[7] = {3,5,6,9,10,11};
 int bulb = 8;//neon bulb pin
-uint8_t data1 = B01001111;//for blue leds and no decimals
+uint8_t data1 = B00101111;//for blue leds and no decimals
 int packet[] = {0,0,0,0,0,0};//6 digits
 
 void setup(){
@@ -41,7 +41,7 @@ void setup(){
 
 void loop(){
   
-  /*if (Serial.available()>=6){
+  if (Serial.available()>=6){
     Serial.println("6 digits received");
     for (int x = 0; x<6; x++){
       packet[x] = (int(Serial.read()) - 48);
@@ -72,10 +72,10 @@ void loop(){
       packet[x] = packet[x]+1;
     }
   }
-  */
+  
 
 
-  delay(999999);
+  //delay(999999);
 }
   
      
