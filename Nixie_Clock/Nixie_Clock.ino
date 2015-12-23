@@ -101,7 +101,7 @@ void loop(){
     getTime(digits,prevdigits,sizeof(digits),mode);
     
     starttime = millis();
-    Serial.println("fade");
+    //Serial.println("fade");
     fade(digits,prevdigits,sizeof(digits));
 
     if (tm.Hour == 16){
@@ -229,6 +229,7 @@ void Update(uint8_t numbers[],int n){
   //8 bit int for each chip
   int data1 = B10110000;//for blue leds and no decimals;
   //colour depends on time of day
+  //to do: put this in main loop
   if (16<=tm.Hour && tm.Hour<22){
     data1 = B11010000;//red
   }
@@ -239,7 +240,7 @@ void Update(uint8_t numbers[],int n){
     data1 = B01110000;//green
   }
   else{
-    data1 = B1111000;//off
+    data1 = B11110000;//off
   }
   
   
@@ -268,7 +269,7 @@ void Update(uint8_t numbers[],int n){
 }
 
 void timesync(){
-
+      //Serial.println(got_gps);
       if (got_gps == false){
         gps.wake();
         

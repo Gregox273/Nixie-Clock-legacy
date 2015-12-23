@@ -117,6 +117,11 @@ bool GPS::gettime(){
         return true;
       }
     }
+    else{
+      while (ser.available()){//this prevents the function affecting the fade effect
+        int temp = ser.read();
+      }
+    }
     return false;
 }
 
@@ -205,6 +210,7 @@ boolean GPS::getUBX_ACK(uint8_t *MSG) {
 void GPS::wake(){
   if (!_awake){
     uint8_t GPSon[] = {0xB5, 0x62, 0x06, 0x04, 0x04, 0x00, 0x01, 0x00,0x09, 0x00, 0x18, 0x7A};
+    
     for (int x = 0; x < 12; x++){
       ser.write(GPSon[x]);
     }
@@ -220,7 +226,8 @@ void GPS::sleep(){
       ser.write(GPSoff[x]);
     }
     ser.flush();
-    _awake = false;
+    
+    _awake = false
   }
 }
 
