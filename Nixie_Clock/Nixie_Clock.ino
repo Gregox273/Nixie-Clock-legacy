@@ -283,6 +283,11 @@ void timesync(){
           tm.Hour = gps.gpstime.Hour;
           tm.Minute = gps.gpstime.Min;
           tm.Second = gps.gpstime.Sec;
+
+          time_t current = makeTime(tm);
+          //Serial.println(current);
+          time_t corrected = current + 3600; //3600s = 1 hour
+          breakTime(corrected, tm);
           RTC.write(tm);
           
             //Serial.println("Written to RTC");
