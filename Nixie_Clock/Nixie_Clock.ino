@@ -35,6 +35,8 @@ int prev_mode_state = HIGH;
 unsigned long mode_debounce_time = 0;
 bool mode_pressed = false;
 
+volatile int set_pressed = 12;
+
 int mode = 0;//0 for time, 1 for date, 2 for countdown
 
 tmElements_t tm;//time read from RTC
@@ -43,9 +45,9 @@ GPS gps(14,13);//instance of GPS class from GPS library
 
 
 void setup(){
-  if (debug){
+  //if (debug){
     Serial.begin(9600);
-  }
+  //}
   SoftwareSerial ser(14,13);//serial port for GPS (hardware serial used for debugging, communication and reprogramming)
   ser.begin(9600);
   pinMode (latchPin, OUTPUT);
@@ -56,7 +58,7 @@ void setup(){
   //Buttons:
   pinMode (modein, INPUT_PULLUP);
   pinMode (setin, INPUT_PULLUP);
-  
+  attachInterrupt(digitalPinToInterrupt(2),set_interrupt,LOW);
   //All anode PWM pins to outputs
   for (int x = 0; x<6; x++){
     pinMode(anodes[x],OUTPUT);
@@ -78,7 +80,7 @@ void setup(){
   gps.set_ubx_protocol();
   gps.deactivate_nav_sol();
   gps.activate_sbas();
-  for (int attempt = 0; attempt < 20; attempt++){//timeout after 100 tries
+  for (int attempt = 0; attempt < 20; attempt++){//timeout after 20 tries
     timesync();//try to get gps time on startup
   }
 
@@ -94,6 +96,11 @@ void loop(){
     mode++;
     mode = mode%3;//mode 0,1,2
     
+  }
+  static int prev_set_pressed = set_pressed;
+  if (set_pressed != prev_set_pressed){
+    correction(prev_set_pressed);
+    prev_set_pressed = set_pressed;
   }
   
   
@@ -128,6 +135,9 @@ void getTime(uint8_t numbers[],uint8_t prevnumbers[], int n, int Mode){//array, 
   //assumes DS1307 has been set; for now use the settime example (DS1307 library) to set the DS1307 (then upload another program so the time isn't set again!)
   if(RTC.read(tm)){
     if (Mode == 0){//display time
+      //-----------------
+      //TO DO : REPLACE WITH E.G. HOUR(T) FUNCTION?
+      //to prevent errors if time rolls over between elements
       numbers[0] = tm.Hour/10;
       numbers[1] = tm.Hour%10;
       numbers[2] = tm.Minute/10;
@@ -153,13 +163,13 @@ void getTime(uint8_t numbers[],uint8_t prevnumbers[], int n, int Mode){//array, 
       target_elements.Minute = 0;
       target_elements.Hour = 0;
       target_elements.Wday = 6;//Friday
-      target_elements.Day = 25;
-      target_elements.Month = 12;
-      target_elements.Year = (2015 - 1970);
+      target_elements.Day = 11;
+      target_elements.Month = 3;
+      target_elements.Year = (2016 - 1970);
       time_t target = makeTime(target_elements);
       
       time_t systime = makeTime(tm);//current time
-      time_t difftime = target - systime;; // difference between target and current time
+      time_t difftime = (target - systime)/60; // difference between target and current time (/60 for minutes)
      
       //Serial.println(difftime);
       if (difftime < 1000000){//only display if it will fit
@@ -170,7 +180,7 @@ void getTime(uint8_t numbers[],uint8_t prevnumbers[], int n, int Mode){//array, 
         numbers[4] = (difftime%100)/10;
         numbers[5] = (difftime%10);
       }
-      else{//if the number of seconds remaining won't fit
+      else{//if the number of seconds/hours remaining won't fit
         for (int x = 0; x < 6; x++){
           numbers[x] = 9;
         }
@@ -283,17 +293,38 @@ void timesync(){
           tm.Hour = gps.gpstime.Hour;
           tm.Minute = gps.gpstime.Min;
           tm.Second = gps.gpstime.Sec;
-          RTC.write(tm);
+
           
-            //Serial.println("Written to RTC");
           gps.sleep();
+          correction(12);//add hour correction (e.g. daylight savings or timezone change)
+                         //12 since starting from GMT
+
+          //RTC.write(tm);
         }
+        //Serial.println(set_pressed);
+        //Serial.println("Written to RTC");
       }
     
     
     //Serial.println(gps._awake);
     //Serial.println(got_gps);
     //Serial.println("");
+}
+
+void correction(int prev_count){
+  int hours_added = set_pressed%25;
+  prev_count = prev_count%25;
+  Serial.println(hours_added);
+  Serial.println(prev_count);
+  Serial.println();
+  time_t current = makeTime(tm);
+  //Serial.println(current);
+  time_t corrected = current + (hours_added - prev_count) * 3600L; //3600s = 1 hour
+  //Serial.println((hours_added - prev_count) * 3600L);
+  //Serial.println(corrected);
+  //Serial.println();
+  breakTime(corrected, tm);//update tm struct
+  RTC.write(tm);
 }
 
 bool modePress(){
@@ -315,6 +346,16 @@ bool modePress(){
   return false;
 }
 
+void set_interrupt(){ 
+  static int buttonpress = 150;//button press duration for debounce
+  static unsigned long debounce_time = millis();
+  if (millis() - debounce_time > buttonpress){
+    set_pressed++;
+    set_pressed = set_pressed%25;//rollover for +-hours correction
+  }
+  debounce_time = millis();
+}
+
 void poisoning(){
   if (!cycled){
     cycled = true;
@@ -329,7 +370,7 @@ void poisoning(){
       int data2 = B11111111;//light decimals too
       int data3 = numbers[4] + (numbers[5] << 4);
       int data4 = numbers[2] + (numbers[3] << 4);
-      int data5 = numbers[0] + (numbers[1] << 4);
+      int data5 = numbers[0] + (numbers[1] << 4); 
   
       //send values to shift registers
       digitalWrite(latchPin,LOW);

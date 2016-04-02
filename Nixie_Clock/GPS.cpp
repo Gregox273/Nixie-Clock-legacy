@@ -227,7 +227,7 @@ void GPS::sleep(){
     }
     ser.flush();
     
-    _awake = false
+    _awake = false;
   }
 }
 
