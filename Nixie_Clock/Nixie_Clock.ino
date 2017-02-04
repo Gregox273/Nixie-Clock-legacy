@@ -78,7 +78,7 @@ void setup(){
   gps.set_ubx_protocol();
   gps.deactivate_nav_sol();
   gps.activate_sbas();
-  for (int attempt = 0; attempt < 20; attempt++){//timeout after 100 tries
+  for (int attempt = 0; attempt < 10; attempt++){//timeout after 10 tries
     timesync();//try to get gps time on startup
   }
 
@@ -150,12 +150,12 @@ void getTime(uint8_t numbers[],uint8_t prevnumbers[], int n, int Mode){//array, 
       //See http://macetech.com/blog/node/115 for this time difference method:
       tmElements_t target_elements;
       target_elements.Second = 0;
-      target_elements.Minute = 0;
-      target_elements.Hour = 0;
-      target_elements.Wday = 6;//Friday
-      target_elements.Day = 25;
-      target_elements.Month = 12;
-      target_elements.Year = (2015 - 1970);
+      target_elements.Minute = 30;
+      target_elements.Hour = 8;
+      target_elements.Wday = 4;//Wednesday
+      target_elements.Day = 1;
+      target_elements.Month = 6;
+      target_elements.Year = (2016 - 1970);//year - 1970
       time_t target = makeTime(target_elements);
       
       time_t systime = makeTime(tm);//current time
@@ -284,10 +284,13 @@ void timesync(){
           tm.Minute = gps.gpstime.Min;
           tm.Second = gps.gpstime.Sec;
 
-          time_t current = makeTime(tm);
+                    
+        // Daylight savings:
+          // time_t current = makeTime(tm);
           //Serial.println(current);
-          time_t corrected = current + 3600; //3600s = 1 hour
-          breakTime(corrected, tm);
+          //time_t corrected = current + 3600; //3600s = 1 hour
+          //breakTime(corrected, tm);
+          
           RTC.write(tm);
           
             //Serial.println("Written to RTC");

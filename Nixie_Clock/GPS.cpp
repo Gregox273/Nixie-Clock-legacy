@@ -17,7 +17,7 @@ void GPS::init(int baud){
     Serial.println("GPS Demonstration Script");
     Serial.println("Initialising....");
   }
-  // THE FOLLOWING COMMAND SWITCHES MODULE TO 4800 BAUD
+  // THE FOLLOWING COMwhMAND SWITCHES MODULE TO 4800 BAUD
   // THEN SWITCHES THE SOFTWARE SERIAL TO 4,800 BAUD
   // lower baud rate gives increased reliability over software serial
   String msg = "$PUBX,41,1,0007,0003,";
@@ -65,7 +65,7 @@ bool GPS::gettime(){
     ser.write(setUtc[x]);
   }
   ser.flush();
-  delay(700);
+  delay(700);// ?
   if (ser.available() > 27){    
       uint8_t buf[28];//the packet from the GPS
 
@@ -127,26 +127,32 @@ bool GPS::gettime(){
 
 
 void GPS::sendUBX(uint8_t *MSG, uint8_t len) {
-  while(!_gps_set_sucess){//keep trying until GPS acknowledges message
+  bool timeout = false;
+  unsigned long starttime = millis();
+  while(!_gps_set_sucess && !timeout){//keep trying until GPS acknowledges message
     uint8_t CK_A = 0x00; //checksum variables
     uint8_t CK_B = 0x00;
  
     for(int I=2;I<len-2;I++)//checksum algorithm (does not use first 2 bytes)
-   {
+    {
      CK_A = CK_A + MSG[I];
      CK_B = CK_B + CK_A;
-   }
+    }
 
     MSG[len-2] = CK_A;//saves checksum to last 2 bytes of message
     MSG[len-1] = CK_B;
     for(int i=0; i<len; i++) {
       ser.write(MSG[i]);
     //Serial.print(MSG[i], HEX);//for debugging
-  }
-  ser.println();
+    }
+    ser.println();
     _gps_set_sucess=getUBX_ACK(MSG);
+    unsigned long difference = millis() - starttime;
+    if (difference > 10000) {
+      timeout = true; 
+    }
   }
-_gps_set_sucess=0;//reset 'message acknowledged' variable  
+  _gps_set_sucess=0;//reset 'message acknowledged' variable  
 }
 
 // Calculate expected UBX ACK packet and parse UBX response from GPS
